@@ -1,34 +1,45 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [questions, setQuestions] = useState([
+    { text: 'Pregunta 1', answers: ['', ''] },
+    { text: 'Pregunta 2', answers: ['', ''] },
+  ])
+
+  const handleAnswerChange = (qIndex, aIndex, value) => {
+    setQuestions(prev =>
+      prev.map((q, idx) =>
+        idx === qIndex
+          ? {
+              ...q,
+              answers: q.answers.map((ans, j) => (j === aIndex ? value : ans)),
+            }
+          : q
+      )
+    )
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div>
+      {questions.map((q, qIdx) => (
+        <div key={qIdx}>
+          <h2>{q.text}</h2>
+          {q.answers.map((ans, aIdx) => (
+            <div key={aIdx}>
+              <label>
+                Respuesta {aIdx + 1}: {' '}
+                <input
+                  type="text"
+                  value={ans}
+                  onChange={e => handleAnswerChange(qIdx, aIdx, e.target.value)}
+                />
+              </label>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
   )
 }
 
