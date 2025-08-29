@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion as Motion } from "framer-motion";
 
 // SOP – DESCARGA COMPLETA DEL SISTEMA DE ENTREGA DEL SERVICIO (6 pasos)
@@ -63,6 +63,37 @@ const STEPS = [
   },
 ];
 
+function Field({ f, isFirst, value, onChange, firstFieldRef }) {
+  const base =
+    "w-full rounded-2xl bg-black/40 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/80 focus:border-white/80 transition p-4 placeholder-white/40 text-white";
+
+  const handleChange = useCallback(
+    (e) => onChange(f.name, e.target.value),
+    [onChange, f.name]
+  );
+
+  const commonProps = {
+    id: f.name,
+    name: f.name,
+    required: f.required,
+    value,
+    onChange: handleChange,
+    autoComplete: "off",
+    ...(isFirst ? { ref: firstFieldRef } : {}),
+  };
+
+  if (f.type === "textarea") {
+    return (
+      <textarea
+        className={`${base} min-h-[140px] resize-vertical`}
+        {...commonProps}
+      />
+    );
+  }
+
+  return <input className={base} type={f.type} {...commonProps} />;
+}
+
 export default function OPSFormPreview() {
   const [stepIndex, setStepIndex] = useState(0);
   const [submitted, setSubmitted] = useState(false);
@@ -81,8 +112,7 @@ export default function OPSFormPreview() {
     firstFieldRef.current?.focus();
   }, [stepIndex]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleChange = (name, value) => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -98,32 +128,6 @@ export default function OPSFormPreview() {
   };
 
   const back = () => setStepIndex((i) => Math.max(0, i - 1));
-
-  const Field = ({ f, isFirst }) => {
-    const base =
-      "w-full rounded-2xl bg-black/40 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/80 focus:border-white/80 transition p-4 placeholder-white/40 text-white";
-
-    const commonProps = {
-      id: f.name,
-      name: f.name,
-      required: f.required,
-      value: form[f.name] ?? "",
-      onChange: handleChange,
-      autoComplete: "off",
-      ...(isFirst ? { ref: firstFieldRef } : {}),
-    };
-
-    if (f.type === "textarea") {
-      return (
-        <textarea
-          className={`${base} min-h-[140px] resize-vertical`}
-          {...commonProps}
-        />
-      );
-    }
-
-    return <input className={base} type={f.type} {...commonProps} />;
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-black to-neutral-900 text-white p-6">
@@ -171,7 +175,13 @@ export default function OPSFormPreview() {
                     {STEPS[stepIndex].fields.map((f, idx) => (
                       <div key={f.name} className="space-y-2">
                         <label className="text-sm text-white/80" htmlFor={f.name}>{f.label}</label>
-                        <Field f={f} isFirst={idx === 0} />
+                        <Field
+                          f={f}
+                          isFirst={idx === 0}
+                          value={form[f.name] ?? ""}
+                          onChange={handleChange}
+                          firstFieldRef={firstFieldRef}
+                        />
                       </div>
                     ))}
                   </div>
