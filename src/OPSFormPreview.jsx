@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion as Motion } from "framer-motion";
 
 // SOP – DESCARGA COMPLETA DEL SISTEMA DE ENTREGA DEL SERVICIO (6 pasos)
@@ -67,12 +67,17 @@ function Field({ f, isFirst, value, onChange, firstFieldRef }) {
   const base =
     "w-full rounded-2xl bg-black/40 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/80 focus:border-white/80 transition p-4 placeholder-white/40 text-white";
 
+  const handleChange = useCallback(
+    (e) => onChange(f.name, e.target.value),
+    [onChange, f.name]
+  );
+
   const commonProps = {
     id: f.name,
     name: f.name,
     required: f.required,
     value,
-    onChange,
+    onChange: handleChange,
     autoComplete: "off",
     ...(isFirst ? { ref: firstFieldRef } : {}),
   };
@@ -107,8 +112,7 @@ export default function OPSFormPreview() {
     firstFieldRef.current?.focus();
   }, [stepIndex]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleChange = (name, value) => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
