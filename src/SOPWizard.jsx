@@ -1,11 +1,166 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const sopSource = `... (TU TEXTO LARGO DEL SOP AQUÍ, exactamente como lo tenías) ...`;
+const sopSource = `
+SOP - Implementación Operativa Inicial
+SOP - Implementación Operativa Inicial
 
-// helpers sin tipos TS
+Resumen ejecutivo
+
+Ingresar, diagnosticar y ordenar. Capturar conocimiento clave (Coach/Closer/Setter). Medir baseline y definir foco. Organizar equipos y herramientas. Activar canales de adquisición pertinentes y estandarizar la entrega. Instalar reuniones, tableros y mejora continua.
+
+Objetivo y Resultado esperado
+
+Objetivo: Estabilizar, escalar el negocio, tomando decisiones basadas en datos.
+
+Resultado: SOPs por rol publicados, trackers activos, KPIs con baseline, reuniones instaladas, canales de adquisición operativos y plan de optimización continua.
+
+Alcance
+
+Marketing de respuesta directa y contenido; seteo (DM/agenda); pre-call; llamadas de venta; cierre; onboarding; entrega de servicio; referidos/upsells/renovaciones/comunidad; reporting y gobierno operativo.
+
+Roles y responsabilidades
+
+CEO y Coach de Entrega: Fija visión, objetivos y restricciones. Aprueba prioridades. Provee accesos o autoriza instalación. Aporta “descarga cerebral” del delivery, cuellos y estándares; co-diseña mejoras (gating, QA, referidos/upsell).
+
+Director Comercial (Luca): Orquesta el proceso comercial, consolida datos, mantiene SOPs/trackers, lidera reuniones y reporting; se encarga de escalar el negocio de forma estable y de largo plazo.
+
+Setter: Ejecuta guion de seteo, agenda manual y puede realizar el pre-call. Para sostener volumen y calidad de asistencia debe existir una persona dedicada a confirmaciones: confirmar, nutrir, resolver dudas y alinear condiciones para que el lead se presente correctamente a la llamada de venta. Actualiza CRM del setter y Tracker.
+
+Closer: Ejecuta guion de cierre, registra y revisa llamadas (Fathom), reporta objeciones y mejoras a guiones y plantillas.
+
+Contenido: Encargado de estructurar el contenido de forma estratégica. Realiza revisiones diarias y semanales reportando con el Director Comercial para tomar decisiones basadas en datos, así corregir y escalar el negocio de forma estable y de largo plazo.
+
+Herramientas
+
+ClickUp, Gmail, ChatGPT, Slack, Skool, Zapier, Ads Manager.
+Accesos: Si estas apps ya existen, entregar accesos; si no, instalarlas. Gmail corporativo: acceso obligatorio.
+
+Tracker Empresa: Medir el proceso completo de la empresa de forma global mensualmente y semanalmente; establecer cliente ideal y llevar control de finanzas.
+Tracker Entrega de Servicio: Llevar trackeo de todos los clientes activos, el progreso en porcentaje, que los entregables estén al día y las tareas al día; recolectar datos para generar referidos, upsells y renovaciones.
+Tracker Closing: Llevar un registro total de todo el proceso del Closer y poder corregir su progreso en base a datos.
+Tracker Setter: Llevar un registro total de todo el proceso del Setter y poder corregir su progreso en base a datos.
+
+Proceso paso a paso
+Día 1 - Aterrizaje y baseline
+
+Paneo de equipo comercial. Roles, cargas, brechas y desempeño actual (observación).
+Envío de entregables al Coach (SOPs y formularios).
+
+Doc 1: https://docs.google.com/document/d/10hBkVPYKItYeP4PvLZAsQASJtPVM6RkT6qWywuU25_8/edit?usp=sharing
+Doc 2: https://docs.google.com/document/d/1kV2AMyjk1Z2LbVfFO8r1Nm3tQJ5AzXeA3ijXqfBJXdw/edit?tab=t.0#heading=h.p8v6ne98bupl
+
+Solicitar “descarga cerebral” por rol.
+Coach: Cliente ideal y entrega de servicio
+Closer: Objeciones, guion de venta, ICP, uso de tracker y tareas.
+Setter: ICP, guion de seteo, CRM del setter, tracker y tareas.
+
+Accesos críticos. Slack, ClickUp, CRM del setter, Trackers, Skool, Fathom, Stripe, Gmail corporativo (obligatorio), Zapier/Make, Ads Manager.
+
+Cargar Tracker Empresa (mes anterior + mes actual).
+LTB (Lead→Booked), Asistencia %, Cierre %, Cash Collected (nuevo dinero), Liquidez, Ticket promedio, Facturación, LTV (Life Time Value) y ROAS (si se corren anuncios).
+
+Definir ICP preliminar. CEO + Setter + Closer (quién compra hoy y por qué).
+
+Reunión con CEO (Horario a confirmar). Estado del negocio, metas, restricciones, equipo y decisiones inmediatas.
+
+Día 2 - Adquisición y organización
+
+Reunión con Coach. Diseñar/activar canales faltantes: referidos, upsells, renovaciones y comunidad paga.
+Contenido “follow me” es opcional; evaluarlo según fit del negocio.
+
+Ads a DM (si aplica). Escalar agenda +10-15% manteniendo bandas de Asistencia % y Cierre %.
+
+Slack por área + ClickUp.
+Canales: #comercial, #contenido, #entregadeservicio.
+Estructurar y publicar SOPs y documentos.
+
+Día 3 - Delivery y protocolo
+
+Análisis de entrega end-to-end. Onboarding, sesiones, soporte, QA, referidos/upsells/renovaciones, comunidad mensual.
+Gating semanal en Skool. Checklist de avance y hitos que disparen referidos/upsell/renovación.
+Protocolizar. Documentar “cómo se hace” desde contenido → venta → onboarding → renovación.
+
+Semana 1 - Micro, coaching y datos
+
+Seteo (Ejecución). Adaptar guion al ICP; entrenar setter; puede hacer pre-call, pero para sostener volumen y calidad de asistencia se sugiere una persona dedicada a confirmaciones: confirmar, nutrir, resolver dudas, alinear condiciones de presentación del lead a la llamada de venta; actualizar CRM del setter y Tracker.
+
+Closing (Profundización). Reunión de 2 horas con closer: procesos, subcomunicación y objeciones; revisar guion de ventas.
+
+Setters y Closers
+Setters - Daily 15-20': Resumen, calidad (DMs/audios), procesos, acciones con owner y fecha.
+Setters - Weekly 45-60': Resumen, calidad (DMs/audios), procesos, acciones con owner y fecha.
+Closer - Revisiones: Lunes, Miércoles y Viernes 14:30-15:00; Sábado post-jornada (repaso semanal y ajustes) con Fathom.
+
+Recolección de datos (7 días). Medir impacto; nueva reunión con CEO para activar o ajustar canales (referidos/upsells/renovaciones/comunidad).
+
+Operativa continua
+
+Semanal: Revisar KPIs; ajustes a guiones/plantillas; QA de llamadas; backlog de tests (contenido/ads si aplica).
+Mensual: Comparativa de meses; decisiones de presupuesto y headcount; actualización de SOPs y playbooks.
+Eliminar capital humano o mejorar capital humano.
+Cambiar procesos y sistemas de la empresa.
+
+Checklists operativas (copy-paste)
+Accesos iniciales
+
+Slack, ClickUp, CRM del setter, Tracker Empresa, Trackers por rol, Skool, Fathom, Stripe, Gmail corporativo, Zapier/Make, Ads Manager.
+
+Entregables Día 1
+
+Pedir “descarga cerebral” a Closer y Setter.
+Relevar equipo comercial e ICP preliminar.
+Completar Tracker Empresa (mes anterior + actual).
+Agendar reunión con CEO.
+
+Activación de adquisición (Día 2)
+
+Referidos: Trigger, script e incentivo.
+Upsells: Ofertas, timing y criterios.
+Renovaciones: Calendario y propuestas.
+Comunidad mensual paga: Propuesta de valor y calendario.
+Ads a DM (si aplica): Plan de escalado y control de calidad.
+
+Reuniones Seters
+
+Daily 15-20': Resumen, calidad (DMs/audios), procesos, acciones con owner y fecha.
+Weekly 45-60': Resumen, calidad (DMs/audios), procesos, acciones con owner y fecha.
+
+Reuniones Closer
+
+Lun/Mié/Vie 14:30-15:00 y Sábado post-jornada: Revisión de llamadas con Fathom, objeciones y ajustes de guion.
+
+KPIs y fórmulas mínimas
+
+LTB (Lead→Booked %) = Agendas hechas / Leads captados.
+Asistencia % = Llamadas tomadas / Agendas.
+Cierre % = Ventas / Llamadas tomadas.
+Cash Collected = Σ cobros efectivamente ingresados en el período.
+Facturación = Σ ventas facturadas (nominal) del período.
+Liquidez = Liquidez de nuevo dinero / Facturación.
+Ticket Promedio (EPS) = Liquidez de nuevo dinero / Nº de ventas.
+LTV (Life Time Value) = ARPU × Margen × Meses de retención.
+
+Entregables y plantillas
+
+Docs Coach.
+SOP Closer.
+SOP Setter.
+CRM del Setter.
+Tracker Empresa.
+Tracker de Entrega de Servicio.
+Guion de Seteo v1.
+Guion de Ventas v1.
+Plantillas WhatsApp (pre-call y seguimiento).
+`;
+
 const slug = (s) =>
-  s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 
 const cx = (...c) => c.filter(Boolean).join(" ");
 
@@ -16,7 +171,6 @@ const fade = {
   transition: { duration: 0.16 },
 };
 
-// --- PARSER EN JS PURO (sin "type", ni ": string", ni "as const") ---
 function parseSOP(src) {
   const lines = src.replace(/\r/g, "").split("\n").map((l) => l.trim());
   const title = (lines.find((l) => l.length) ?? "SOP").trim();
@@ -161,7 +315,15 @@ function parseSOP(src) {
   for (const b of temps) {
     const s = mapSection(b);
     if (s) {
-      if (s.id === "proceso" && s.groups?.[0]?.items?.length === 0) continue;
+      if (
+        s.id === "proceso" &&
+        s.groups &&
+        s.groups[0] &&
+        s.groups[0].items &&
+        s.groups[0].items.length === 0
+      ) {
+        continue;
+      }
       sections.push(s);
     }
   }
@@ -170,19 +332,26 @@ function parseSOP(src) {
 
 function StepRail({ steps, current, onJump }) {
   const listRef = useRef(null);
-
   useEffect(() => {
     const el = listRef.current?.querySelector(`button[data-index="${current}"]`);
     el?.scrollIntoView({ block: "nearest" });
   }, [current]);
 
   const onKey = (e) => {
-    if (e.key === "ArrowUp") { e.preventDefault(); onJump(Math.max(0, current - 1)); }
-    else if (e.key === "ArrowDown") { e.preventDefault(); onJump(Math.min(steps.length - 1, current + 1)); }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      onJump(Math.max(0, current - 1));
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      onJump(Math.min(steps.length - 1, current + 1));
+    }
   };
 
   return (
-    <aside className="w-72 shrink-0 h-[calc(100vh-48px)] overflow-auto px-3 py-4 bg-white/60 backdrop-blur-md border-r border-[#9EC9FF]/30 sticky top-6 rounded-2xl" onKeyDown={onKey}>
+    <aside
+      className="w-72 shrink-0 h-[calc(100vh-48px)] overflow-auto px-3 py-4 bg-white/60 backdrop-blur-md border-r border-[#9EC9FF]/30 sticky top-6 rounded-2xl"
+      onKeyDown={onKey}
+    >
       <div className="text-xs text-[#506B85] mb-3 px-2">Secciones</div>
       <div ref={listRef} className="space-y-1">
         {steps.map((s, i) => (
@@ -192,10 +361,14 @@ function StepRail({ steps, current, onJump }) {
             onClick={() => onJump(i)}
             className={cx(
               "w-full text-left px-3 py-2 rounded-xl transition border",
-              i === current ? "bg-white border-[#9EC9FF]/60 text-[#0B0D10] shadow-sm" : "bg-transparent border-[#9EC9FF]/30 text-[#506B85] hover:bg-white/40"
+              i === current
+                ? "bg-white border-[#9EC9FF]/60 text-[#0B0D10] shadow-sm"
+                : "bg-transparent border-[#9EC9FF]/30 text-[#506B85] hover:bg-white/40"
             )}
           >
-            <div className="text-xs uppercase tracking-wide">{i + 1 < 10 ? `0${i + 1}` : i + 1}</div>
+            <div className="text-xs uppercase tracking-wide">
+              {i + 1 < 10 ? `0${i + 1}` : i + 1}
+            </div>
             <div className="text-sm">{s.title}</div>
           </button>
         ))}
@@ -212,7 +385,11 @@ function Accordion({ title, children, open, onToggle }) {
         <span className="text-xs text-[#506B85]">{open ? "Cerrar" : "Abrir"}</span>
       </button>
       <AnimatePresence initial={false}>
-        {open && <motion.div {...fade} className="px-4 pb-4">{children}</motion.div>}
+        {open && (
+          <motion.div {...fade} className="px-4 pb-4">
+            {children}
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
@@ -228,7 +405,10 @@ function Checklist({ items, ns, onToggle, state }) {
           <li key={id} className="flex items-start gap-3">
             <button
               onClick={() => onToggle(id)}
-              className={cx("mt-0.5 h-5 w-5 rounded-md border border-[#9EC9FF]/50 flex items-center justify-center", checked ? "bg-white" : "bg-transparent")}
+              className={cx(
+                "mt-0.5 h-5 w-5 rounded-md border border-[#9EC9FF]/50 flex items-center justify-center",
+                checked ? "bg-white" : "bg-transparent"
+              )}
               aria-pressed={checked}
             >
               <span className={cx("text-[10px] leading-none", checked ? "text-black" : "text-transparent")}>✓</span>
@@ -264,34 +444,52 @@ export default function SOPWizard() {
     const s = sections[index];
     if (!s) return;
     if (s.type === "generic") {
-      const next = { ...openMap };
-      (s.groups || []).forEach((_, gi) => {
-        const key = `${s.id}-${gi}`;
-        if (next[key] === undefined) next[key] = true;
+      setOpenMap((prev) => {
+        const next = { ...prev };
+        (s.groups || []).forEach((_, gi) => {
+          const key = `${s.id}-${gi}`;
+          if (next[key] === undefined) next[key] = true;
+        });
+        return next;
       });
-      setOpenMap(next);
     }
-  }, [index, sections]); // intencional
+  }, [index, sections]);
 
   const toggleAll = (open) => {
     const s = sections[index];
     if (!s || s.type !== "generic") return;
-    const next = { ...openMap };
-    s.groups.forEach((_, gi) => (next[`${s.id}-${gi}`] = open));
-    setOpenMap(next);
+    setOpenMap((prev) => {
+      const next = { ...prev };
+      s.groups.forEach((_, gi) => (next[`${s.id}-${gi}`] = open));
+      return next;
+    });
   };
 
   const onKey = (e) => {
-    if (e.key === "ArrowRight") { e.preventDefault(); setIndex((i) => Math.min(sections.length - 1, i + 1)); }
-    else if (e.key === "ArrowLeft") { e.preventDefault(); setIndex((i) => Math.max(0, i - 1)); }
-    else if (e.key === "Home") { e.preventDefault(); setIndex(0); }
-    else if (e.key === "End") { e.preventDefault(); setIndex(sections.length - 1); }
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      setIndex((i) => Math.min(sections.length - 1, i + 1));
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      setIndex((i) => Math.max(0, i - 1));
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      setIndex(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      setIndex(sections.length - 1);
+    }
   };
 
   const s = sections[index];
 
   return (
-    <div ref={containerRef} onKeyDown={onKey} tabIndex={0} className="outline-none min-h-screen bg-gradient-to-b from-[#F6FBFF] via-[#E9F4FF] to-[#B9DCFF] text-[#0B0D10]">
+    <div
+      ref={containerRef}
+      onKeyDown={onKey}
+      tabIndex={0}
+      className="outline-none min-h-screen bg-gradient-to-b from-[#F6FBFF] via-[#E9F4FF] to-[#B9DCFF] text-[#0B0D10]"
+    >
       <div className="sticky top-0 inset-x-0 z-50">
         <div className="bg-gradient-to-b from-white/80 via-white/60 to-white/40 backdrop-blur border-b border-[#9EC9FF]/30 shadow-sm">
           <div className="pointer-events-none mx-auto max-w-7xl flex justify-center py-2">
@@ -300,7 +498,8 @@ export default function SOPWizard() {
               alt="OPS"
               className="h-16 md:h-20 object-contain select-none"
               onError={(e) => {
-                e.currentTarget.src =
+                const img = e.currentTarget;
+                img.src =
                   'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="56"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%230B0D10" font-family="Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial" font-size="34" letter-spacing="2">OPS</text></svg>';
               }}
             />
@@ -314,38 +513,74 @@ export default function SOPWizard() {
           <div className="ml-auto flex items-center gap-2">
             {s?.type === "generic" && (
               <>
-                <button onClick={() => toggleAll(true)} className="text-xs px-3 py-1.5 rounded-xl border border-[#9EC9FF]/40 hover:bg-white/40">Expandir todo</button>
-                <button onClick={() => toggleAll(false)} className="text-xs px-3 py-1.5 rounded-xl border border-[#9EC9FF]/40 hover:bg-white/40">Contraer todo</button>
+                <button
+                  onClick={() => toggleAll(true)}
+                  className="text-xs px-3 py-1.5 rounded-xl border border-[#9EC9FF]/40 hover:bg-white/40"
+                >
+                  Expandir todo
+                </button>
+                <button
+                  onClick={() => toggleAll(false)}
+                  className="text-xs px-3 py-1.5 rounded-xl border border-[#9EC9FF]/40 hover:bg-white/40"
+                >
+                  Contraer todo
+                </button>
               </>
             )}
-            <button onClick={() => setIndex((i) => Math.max(0, i - 1))} className="text-xs px-3 py-1.5 rounded-xl border border-[#9EC9FF]/40 hover:bg-white/40" disabled={index === 0}>Anterior</button>
-            <button onClick={() => setIndex((i) => Math.min(sections.length - 1, i + 1))} className="text-xs px-3 py-1.5 rounded-xl border border-[#9EC9FF]/40 hover:bg-white/40" disabled={index === sections.length - 1}>Siguiente</button>
+            <button
+              onClick={() => setIndex((i) => Math.max(0, i - 1))}
+              className="text-xs px-3 py-1.5 rounded-xl border border-[#9EC9FF]/40 hover:bg-white/40"
+              disabled={index === 0}
+            >
+              Anterior
+            </button>
+            <button
+              onClick={() => setIndex((i) => Math.min(sections.length - 1, i + 1))}
+              className="text-xs px-3 py-1.5 rounded-xl border border-[#9EC9FF]/40 hover:bg-white/40"
+              disabled={index === sections.length - 1}
+            >
+              Siguiente
+            </button>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-6 flex gap-6">
         <StepRail steps={sections} current={index} onJump={setIndex} />
+
         <section className="flex-1 space-y-4">
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.div key={s?.id} {...fade} className="space-y-4">
               <div className="rounded-2xl border border-[#9EC9FF]/40 bg-white/70 p-5 backdrop-blur">
                 <div className="flex items-center justify-between">
                   <h2 className="text-base md:text-lg font-semibold">{s?.title}</h2>
-                  <div className="text-xs text-[#506B85]">{index + 1}/{sections.length}</div>
+                  <div className="text-xs text-[#506B85]">
+                    {index + 1}/{sections.length}
+                  </div>
                 </div>
               </div>
 
-              {s?.type === "generic" && s.groups?.map((g, gi) => {
-                const key = `${s.id}-${gi}`;
-                const open = !!openMap[key];
-                const ns = `${s.id}-${g.id}`;
-                return (
-                  <Accordion key={key} title={g.title} open={open} onToggle={() => setOpenMap({ ...openMap, [key]: !open })}>
-                    <Checklist ns={ns} items={g.items} state={ticks} onToggle={(id) => setTicks((prev) => ({ ...prev, [id]: !prev[id] }))} />
-                  </Accordion>
-                );
-              })}
+              {s?.type === "generic" &&
+                s.groups?.map((g, gi) => {
+                  const key = `${s.id}-${gi}`;
+                  const open = !!openMap[key];
+                  const ns = `${s.id}-${g.id}`;
+                  return (
+                    <Accordion
+                      key={key}
+                      title={g.title}
+                      open={open}
+                      onToggle={() => setOpenMap({ ...openMap, [key]: !open })}
+                    >
+                      <Checklist
+                        ns={ns}
+                        items={g.items}
+                        state={ticks}
+                        onToggle={(id) => setTicks((prev) => ({ ...prev, [id]: !prev[id] }))}
+                      />
+                    </Accordion>
+                  );
+                })}
 
               {s?.type === "kpi" && (
                 <div className="rounded-2xl border border-[#9EC9FF]/40 p-4 bg-white/70 backdrop-blur">
@@ -359,4 +594,3 @@ export default function SOPWizard() {
     </div>
   );
 }
-
