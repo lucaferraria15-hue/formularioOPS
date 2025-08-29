@@ -1,214 +1,362 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { motion as Motion } from "framer-motion";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
-// SOP – DESCARGA COMPLETA DEL SISTEMA DE ENTREGA DEL SERVICIO (6 pasos)
-const STEPS = [
-  {
-    id: "estructura",
-    title: "Estructura general",
-    fields: [
-      { name: "duracion_programa", label: "¿Cuánto dura el programa?", type: "textarea", required: true },
-      { name: "organizacion_contenido", label: "¿Cómo está organizado el contenido? (semanas, módulos, niveles, fases)", type: "textarea", required: true },
-      { name: "diferencias_clientes", label: "¿Hay diferencias entre tipos de clientes? (VIP, grupos, 1:1… ¿qué cambia?)", type: "textarea", required: true },
-    ],
-  },
-  {
-    id: "contenido",
-    title: "Contenido que se entrega",
-    fields: [
-      { name: "recibe_por_semana", label: "¿Qué recibe exactamente el cliente en cada semana/módulo?", type: "textarea", required: true },
-      { name: "tipos_materiales", label: "¿Qué materiales se entregan? (videos, PDFs, formularios, tareas)", type: "textarea", required: true },
-      { name: "plataformas", label: "¿Qué plataformas se utilizan? (Drive, Notion, Kajabi, etc.)", type: "textarea", required: true },
-      { name: "comunidad_soporte", label: "¿Existe comunidad/grupo de soporte? ¿Quién modera y cada cuánto se interactúa?", type: "textarea", required: true },
-    ],
-  },
-  {
-    id: "sesiones",
-    title: "Sesiones en vivo",
-    fields: [
-      { name: "sesiones_vivo", label: "¿Se brindan sesiones en vivo? ¿Individuales, grupales o mixtas?", type: "textarea", required: true },
-      { name: "frecuencia_sesiones", label: "¿Con qué frecuencia?", type: "textarea", required: true },
-      { name: "quien_dicta", label: "¿Quién las dicta y cuánto duran?", type: "textarea", required: true },
-      { name: "grabaciones", label: "¿Se graban y envían? ¿Cómo acceden las personas?", type: "textarea", required: true },
-    ],
-  },
-  {
-    id: "soporte",
-    title: "Soporte y acompañamiento",
-    fields: [
-      { name: "canales_dudas", label: "¿Por dónde se responden dudas? (WhatsApp, Telegram, email…)", type: "textarea", required: true },
-      { name: "responsables_horarios", label: "¿Quién responde y en qué horario?", type: "textarea", required: true },
-      { name: "seguimiento_individual", label: "¿Hay seguimiento individualizado o general? ¿Cómo se hace?", type: "textarea", required: true },
-      { name: "onboarding", label: "¿Se hace onboarding? (videos, llamadas, correos, automatizaciones; manual/automatizado)", type: "textarea", required: true },
-    ],
-  },
-  {
-    id: "seguimiento_control",
-    title: "Seguimiento y control del avance",
-    fields: [
-      { name: "sistema_trackeo", label: "¿Se utiliza algún sistema para trackear el avance?", type: "textarea", required: true },
-      { name: "seguimiento_tareas", label: "¿Se hace seguimiento de tareas/compromisos? ¿Cómo?", type: "textarea", required: true },
-      { name: "metricas_progreso", label: "¿Existen métricas para medir progreso? ¿Cuáles y cómo se evalúan?", type: "textarea", required: true },
-    ],
-  },
-  {
-    id: "estado_actual",
-    title: "Estado actual del delivery",
-    fields: [
-      { name: "funciona_bien", label: "¿Qué partes están funcionando bien hoy? (lista concreta)", type: "textarea", required: true },
-      { name: "pendientes_desorden", label: "¿Qué partes están pendientes/desordenadas/no se hacen?", type: "textarea", required: true },
-      { name: "intentos_previos", label: "¿Qué cosas se intentaron y se dejaron? (ideas, campañas, dinámicas)", type: "textarea", required: true },
-      { name: "faltantes", label: "¿Qué falta hoy? ¿Qué piden seguido los clientes y no está resuelto?", type: "textarea", required: true },
-    ],
-  },
-];
+const sopSource = `... (TU TEXTO LARGO DEL SOP AQUÍ, exactamente como lo tenías) ...`;
 
-function Field({ f, isFirst, value, onChange, firstFieldRef }) {
-  const base =
-    "w-full rounded-2xl bg-black/40 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/80 focus:border-white/80 transition p-4 placeholder-white/40 text-white";
+// helpers sin tipos TS
+const slug = (s) =>
+  s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
-  const handleChange = useCallback(
-    (e) => onChange(f.name, e.target.value),
-    [onChange, f.name]
-  );
+const cx = (...c) => c.filter(Boolean).join(" ");
 
-  const commonProps = {
-    id: f.name,
-    name: f.name,
-    required: f.required,
-    value,
-    onChange: handleChange,
-    autoComplete: "off",
-    ...(isFirst ? { ref: firstFieldRef } : {}),
+const fade = {
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: 6 },
+  transition: { duration: 0.16 },
+};
+
+// --- PARSER EN JS PURO (sin "type", ni ": string", ni "as const") ---
+function parseSOP(src) {
+  const lines = src.replace(/\r/g, "").split("\n").map((l) => l.trim());
+  const title = (lines.find((l) => l.length) ?? "SOP").trim();
+
+  const isHeader = (line) => {
+    if (!line) return null;
+    const map = [
+      { key: "Resumen ejecutivo", re: /^Resumen ejecutivo$/i },
+      { key: "Objetivo y Resultado esperado", re: /^Objetivo y Resultado esperado$/i },
+      { key: "Alcance", re: /^Alcance(\s*\(In\/Out\))?$/i },
+      { key: "Roles y responsabilidades", re: /^Roles y responsabilidades$/i },
+      { key: "Herramientas", re: /^Herramientas$/i },
+      { key: "Proceso paso a paso", re: /^Proceso paso a paso$/i },
+      { key: "Día 1", re: /^D[ií]a\s*1/i },
+      { key: "Día 2", re: /^D[ií]a\s*2/i },
+      { key: "Día 3", re: /^D[ií]a\s*3/i },
+      { key: "Semana 1", re: /^Semana\s*1/i },
+      { key: "Operativa continua", re: /^Operativa continua$/i },
+      { key: "Checklists operativas (copy-paste)", re: /^Checklists operativas/i },
+      { key: "KPIs y fórmulas mínimas", re: /^KPIs y fórmulas mínimas$/i },
+      { key: "Gobernanza (canales, reuniones, reportes)", re: /^Gobernanza\s*\(canales,\s*reuniones,\s*reportes\)$/i },
+      { key: "Entregables y plantillas", re: /^Entregables y plantillas$/i },
+    ];
+    const found = map.find((m) => m.re.test(line));
+    return found ? found.key : null;
   };
 
-  if (f.type === "textarea") {
-    return (
-      <textarea
-        className={`${base} min-h-[140px] resize-vertical`}
-        {...commonProps}
-      />
-    );
-  }
+  const temps = [];
+  let current = null;
 
-  return <input className={base} type={f.type} {...commonProps} />;
+  for (const l of lines) {
+    const h = isHeader(l);
+    if (h) {
+      if (current) temps.push(current);
+      current = { key: h, title: l, content: [] };
+    } else if (current) {
+      current.content.push(l);
+    }
+  }
+  if (current) temps.push(current);
+
+  const groupsFromParagraphs = (content, defaultTitle = "Contenido") => {
+    const items = [];
+    for (const l of content) if (l) items.push(l);
+    return [{ id: slug(defaultTitle), title: defaultTitle, items }];
+  };
+
+  const parseObjective = (content) => {
+    const obj = content.find((l) => /^objetivo:/i.test(l));
+    const res = content.find((l) => /^resultado:/i.test(l));
+    const g = [];
+    if (obj) g.push({ id: "objetivo", title: "Objetivo", items: [obj.replace(/^objetivo:\s*/i, "")] });
+    if (res) g.push({ id: "resultado", title: "Resultado esperado", items: [res.replace(/^resultado:\s*/i, "")] });
+    return g.length ? g : groupsFromParagraphs(content);
+  };
+
+  const parseRoles = (content) => {
+    const groups = [];
+    content.forEach((l) => {
+      const m = l.match(/^([^:]+):\s*(.+)$/);
+      if (m) groups.push({ id: slug(m[1]), title: m[1].trim(), items: [m[2].trim()] });
+    });
+    return groups.length ? groups : groupsFromParagraphs(content);
+  };
+
+  const parseHerr = (content) => {
+    const trackerLines = content.filter((l) => /^Tracker\s/i.test(l));
+    const accLine = content.find((l) => /^Accesos:/i.test(l));
+    const base = content.filter((l) => l && !/^Tracker\s/i.test(l) && !/^Accesos:/i.test(l));
+
+    const groups = [];
+    if (base.length) groups.push({ id: "herr", title: "Herramientas", items: base });
+    if (accLine) groups.push({ id: "accesos", title: "Accesos", items: [accLine.replace(/^Accesos:\s*/i, "")] });
+
+    trackerLines.forEach((line, i) => {
+      const m = line.match(/^(Tracker\s[^:]+):\s*(.*)$/i);
+      if (m) groups.push({ id: `tracker-${i}`, title: m[1], items: [m[2]] });
+    });
+
+    return groups.length ? groups : groupsFromParagraphs(content, "Herramientas");
+  };
+
+  const parseChecklist = (content) => {
+    const groups = [];
+    let cur = null;
+    const isSub = (l) => !!l && !/^[-•]/.test(l) && !/^Doc\s*\d+:/i.test(l) && !/^\w+\s*[:：]/.test(l) && l.length <= 80;
+
+    for (const l of content) {
+      if (!l) continue;
+      if (isSub(l)) {
+        if (cur) groups.push(cur);
+        cur = { id: slug(l), title: l, items: [] };
+      } else {
+        if (!cur) cur = { id: "lista", title: "Lista", items: [] };
+        cur.items.push(l.replace(/^[-•]\s*/, ""));
+      }
+    }
+    if (cur) groups.push(cur);
+    return groups.length ? groups : groupsFromParagraphs(content);
+  };
+
+  const parseKPIs = (content) => content.filter(Boolean);
+
+  const mapSection = (t) => {
+    switch (t.key) {
+      case "Resumen ejecutivo":
+        return { id: "resumen-ejecutivo", title: "Resumen ejecutivo", type: "generic", groups: groupsFromParagraphs(t.content) };
+      case "Objetivo y Resultado esperado":
+        return { id: "objetivo-resultado", title: "Objetivo y Resultado esperado", type: "generic", groups: parseObjective(t.content) };
+      case "Alcance":
+        return { id: "alcance", title: "Alcance", type: "generic", groups: groupsFromParagraphs(t.content, "Alcance") };
+      case "Roles y responsabilidades":
+        return { id: "roles", title: "Roles y responsabilidades", type: "generic", groups: parseRoles(t.content) };
+      case "Herramientas":
+        return { id: "herramientas", title: "Herramientas", type: "generic", groups: parseHerr(t.content) };
+      case "Proceso paso a paso":
+        return { id: "proceso", title: "Proceso paso a paso", type: "generic", groups: groupsFromParagraphs(t.content) };
+      case "Día 1":
+        return { id: "dia-1", title: t.title, type: "generic", groups: parseChecklist(t.content) };
+      case "Día 2":
+        return { id: "dia-2", title: t.title, type: "generic", groups: parseChecklist(t.content) };
+      case "Día 3":
+        return { id: "dia-3", title: t.title, type: "generic", groups: parseChecklist(t.content) };
+      case "Semana 1":
+        return { id: "semana-1", title: t.title, type: "generic", groups: parseChecklist(t.content) };
+      case "Operativa continua":
+        return { id: "operativa-continua", title: "Operativa continua", type: "generic", groups: groupsFromParagraphs(t.content) };
+      case "Checklists operativas (copy-paste)":
+        return { id: "checklists", title: "Checklists operativas", type: "generic", groups: parseChecklist(t.content) };
+      case "KPIs y fórmulas mínimas":
+        return { id: "kpis", title: "KPIs y fórmulas mínimas", type: "kpi", items: parseKPIs(t.content) };
+      case "Gobernanza (canales, reuniones, reportes)":
+        return { id: "gobernanza", title: "Gobernanza (canales, reuniones, reportes)", type: "generic", groups: groupsFromParagraphs(t.content) };
+      case "Entregables y plantillas":
+        return { id: "entregables", title: "Entregables y plantillas", type: "generic", groups: groupsFromParagraphs(t.content) };
+      default:
+        return null;
+    }
+  };
+
+  const sections = [];
+  for (const b of temps) {
+    const s = mapSection(b);
+    if (s) {
+      if (s.id === "proceso" && s.groups?.[0]?.items?.length === 0) continue;
+      sections.push(s);
+    }
+  }
+  return { title, sections };
 }
 
-export default function SOPWizard() {
-  const [stepIndex, setStepIndex] = useState(0);
-  const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState(() => {
-    const initial = {};
-    STEPS.forEach((s) => s.fields.forEach((f) => (initial[f.name] = "")));
-    return initial;
-  });
+function StepRail({ steps, current, onJump }) {
+  const listRef = useRef(null);
 
-  // progreso real sobre 6 pasos
-  const progress = Math.round(((stepIndex + 1) / STEPS.length) * 100);
-
-  // foco explícito sólo cuando cambia de paso (no en cada tecla)
-  const firstFieldRef = useRef(null);
   useEffect(() => {
-    firstFieldRef.current?.focus();
-  }, [stepIndex]);
+    const el = listRef.current?.querySelector(`button[data-index="${current}"]`);
+    el?.scrollIntoView({ block: "nearest" });
+  }, [current]);
 
-  const handleChange = (name, value) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
+  const onKey = (e) => {
+    if (e.key === "ArrowUp") { e.preventDefault(); onJump(Math.max(0, current - 1)); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); onJump(Math.min(steps.length - 1, current + 1)); }
   };
-
-  const validateStep = () => {
-    const step = STEPS[stepIndex];
-    return step.fields.every((f) => !f.required || String(form[f.name]).trim() !== "");
-  };
-
-  const next = () => {
-    if (!validateStep()) return;
-    if (stepIndex < STEPS.length - 1) setStepIndex((i) => i + 1);
-    else setSubmitted(true);
-  };
-
-  const back = () => setStepIndex((i) => Math.max(0, i - 1));
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-black to-neutral-900 text-white p-6">
-      <div className="w-full max-w-2xl bg-white/5 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 overflow-hidden">
-        <div className="px-8 pt-8 pb-4 flex flex-col items-center justify-center text-center gap-2">
-          <img src="/logo_ops.png" alt="OPS" className="h-10" />
-          <div className="uppercase tracking-widest text-xs text-white/60">OPS</div>
-          <span className="text-xs text-white/60">SOP – Descarga completa</span>
-        </div>
-
-        <div className="px-8 pb-6">
-          <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-            <Motion.div
-              key={stepIndex} // sólo cambia cuando cambia de paso
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: `${progress}%`, opacity: 1 }}
-              transition={{ duration: 0.4 }}
-              className="h-full bg-white"
-            />
-          </div>
-          <div className="flex justify-between mt-2 text-[11px] text-white/60">
-            <span>Paso {stepIndex + 1} de {STEPS.length}</span>
-            <span>{progress}%</span>
-          </div>
-        </div>
-
-        <div className="px-8 pb-8">
-          {submitted ? (
-            <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
-              <h2 className="text-2xl font-semibold mb-3">Gracias, recibimos tu info</h2>
-              <p className="text-white/70">Nos pondremos en contacto a la brevedad.</p>
-            </Motion.div>
-          ) : (
-            <div>
-              {STEPS.length > 0 && (
-                <Motion.div
-                  key={STEPS[stepIndex].id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <h2 className="text-lg font-semibold mb-4">{STEPS[stepIndex].title}</h2>
-                  <div className="space-y-4">
-                    {STEPS[stepIndex].fields.map((f, idx) => (
-                      <div key={f.name} className="space-y-2">
-                        <label className="text-sm text-white/80" htmlFor={f.name}>{f.label}</label>
-                        <Field
-                          f={f}
-                          isFirst={idx === 0}
-                          value={form[f.name] ?? ""}
-                          onChange={handleChange}
-                          firstFieldRef={firstFieldRef}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </Motion.div>
-              )}
-
-              <div className="mt-8 flex items-center gap-3">
-                <Motion.button
-                  whileTap={{ scale: 0.98, opacity: 0.9 }}
-                  onClick={back}
-                  disabled={stepIndex === 0}
-                  className="px-5 py-3 rounded-2xl border border-white/20 text-white/80 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white/10 transition"
-                >
-                  Atrás
-                </Motion.button>
-                <Motion.button
-                  whileTap={{ scale: 0.98, opacity: 0.9 }}
-                  onClick={next}
-                  className="ml-auto px-6 py-3 rounded-2xl bg-white text-black font-medium hover:bg-white/90 transition"
-                >
-                  {stepIndex < STEPS.length - 1 ? "Siguiente" : "Enviar"}
-                </Motion.button>
-              </div>
-            </div>
-          )}
-        </div>
+    <aside className="w-72 shrink-0 h-[calc(100vh-48px)] overflow-auto px-3 py-4 bg-white/60 backdrop-blur-md border-r border-[#9EC9FF]/30 sticky top-6 rounded-2xl" onKeyDown={onKey}>
+      <div className="text-xs text-[#506B85] mb-3 px-2">Secciones</div>
+      <div ref={listRef} className="space-y-1">
+        {steps.map((s, i) => (
+          <button
+            key={s.id}
+            data-index={i}
+            onClick={() => onJump(i)}
+            className={cx(
+              "w-full text-left px-3 py-2 rounded-xl transition border",
+              i === current ? "bg-white border-[#9EC9FF]/60 text-[#0B0D10] shadow-sm" : "bg-transparent border-[#9EC9FF]/30 text-[#506B85] hover:bg-white/40"
+            )}
+          >
+            <div className="text-xs uppercase tracking-wide">{i + 1 < 10 ? `0${i + 1}` : i + 1}</div>
+            <div className="text-sm">{s.title}</div>
+          </button>
+        ))}
       </div>
+    </aside>
+  );
+}
+
+function Accordion({ title, children, open, onToggle }) {
+  return (
+    <div className="rounded-2xl border border-[#9EC9FF]/40 bg-white/70 backdrop-blur">
+      <button onClick={onToggle} className="w-full flex items-center justify-between px-4 py-3">
+        <span className="text-sm text-[#0B0D10]">{title}</span>
+        <span className="text-xs text-[#506B85]">{open ? "Cerrar" : "Abrir"}</span>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && <motion.div {...fade} className="px-4 pb-4">{children}</motion.div>}
+      </AnimatePresence>
     </div>
   );
 }
+
+function Checklist({ items, ns, onToggle, state }) {
+  return (
+    <ul className="space-y-2">
+      {items.map((it, idx) => {
+        const id = `${ns}-${idx}`;
+        const checked = !!state[id];
+        return (
+          <li key={id} className="flex items-start gap-3">
+            <button
+              onClick={() => onToggle(id)}
+              className={cx("mt-0.5 h-5 w-5 rounded-md border border-[#9EC9FF]/50 flex items-center justify-center", checked ? "bg-white" : "bg-transparent")}
+              aria-pressed={checked}
+            >
+              <span className={cx("text-[10px] leading-none", checked ? "text-black" : "text-transparent")}>✓</span>
+            </button>
+            <span className="text-sm text-[#0B0D10]">{it}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function KpiBlock({ items }) {
+  return (
+    <div className="grid md:grid-cols-2 gap-3">
+      {items.map((k, i) => (
+        <div key={i} className="rounded-2xl border border-[#9EC9FF]/40 p-4 bg-white/70 backdrop-blur">
+          <div className="text-sm text-[#0B0D10]">{k}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function SOPWizard() {
+  const { title, sections } = useMemo(() => parseSOP(sopSource), []);
+  const [index, setIndex] = useState(0);
+  const [openMap, setOpenMap] = useState({});
+  const [ticks, setTicks] = useState({});
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const s = sections[index];
+    if (!s) return;
+    if (s.type === "generic") {
+      const next = { ...openMap };
+      (s.groups || []).forEach((_, gi) => {
+        const key = `${s.id}-${gi}`;
+        if (next[key] === undefined) next[key] = true;
+      });
+      setOpenMap(next);
+    }
+  }, [index, sections]); // intencional
+
+  const toggleAll = (open) => {
+    const s = sections[index];
+    if (!s || s.type !== "generic") return;
+    const next = { ...openMap };
+    s.groups.forEach((_, gi) => (next[`${s.id}-${gi}`] = open));
+    setOpenMap(next);
+  };
+
+  const onKey = (e) => {
+    if (e.key === "ArrowRight") { e.preventDefault(); setIndex((i) => Math.min(sections.length - 1, i + 1)); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); setIndex((i) => Math.max(0, i - 1)); }
+    else if (e.key === "Home") { e.preventDefault(); setIndex(0); }
+    else if (e.key === "End") { e.preventDefault(); setIndex(sections.length - 1); }
+  };
+
+  const s = sections[index];
+
+  return (
+    <div ref={containerRef} onKeyDown={onKey} tabIndex={0} className="outline-none min-h-screen bg-gradient-to-b from-[#F6FBFF] via-[#E9F4FF] to-[#B9DCFF] text-[#0B0D10]">
+      <div className="sticky top-0 inset-x-0 z-50">
+        <div className="bg-gradient-to-b from-white/80 via-white/60 to-white/40 backdrop-blur border-b border-[#9EC9FF]/30 shadow-sm">
+          <div className="pointer-events-none mx-auto max-w-7xl flex justify-center py-2">
+            <img
+              src="/logo_ops.png"
+              alt="OPS"
+              className="h-16 md:h-20 object-contain select-none"
+              onError={(e) => {
+                e.currentTarget.src =
+                  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="56"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%230B0D10" font-family="Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial" font-size="34" letter-spacing="2">OPS</text></svg>';
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <header className="sticky top-16 md:top-20 z-40 backdrop-blur supports-[backdrop-filter]:bg-white/60 bg-white/60 border-b border-[#9EC9FF]/30">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-3">
+          <h1 className="text-base md:text-lg font-semibold">{title}</h1>
+          <div className="ml-auto flex items-center gap-2">
+            {s?.type === "generic" && (
+              <>
+                <button onClick={() => toggleAll(true)} className="text-xs px-3 py-1.5 rounded-xl border border-[#9EC9FF]/40 hover:bg-white/40">Expandir todo</button>
+                <button onClick={() => toggleAll(false)} className="text-xs px-3 py-1.5 rounded-xl border border-[#9EC9FF]/40 hover:bg-white/40">Contraer todo</button>
+              </>
+            )}
+            <button onClick={() => setIndex((i) => Math.max(0, i - 1))} className="text-xs px-3 py-1.5 rounded-xl border border-[#9EC9FF]/40 hover:bg-white/40" disabled={index === 0}>Anterior</button>
+            <button onClick={() => setIndex((i) => Math.min(sections.length - 1, i + 1))} className="text-xs px-3 py-1.5 rounded-xl border border-[#9EC9FF]/40 hover:bg-white/40" disabled={index === sections.length - 1}>Siguiente</button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-6 py-6 flex gap-6">
+        <StepRail steps={sections} current={index} onJump={setIndex} />
+        <section className="flex-1 space-y-4">
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.div key={s?.id} {...fade} className="space-y-4">
+              <div className="rounded-2xl border border-[#9EC9FF]/40 bg-white/70 p-5 backdrop-blur">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-base md:text-lg font-semibold">{s?.title}</h2>
+                  <div className="text-xs text-[#506B85]">{index + 1}/{sections.length}</div>
+                </div>
+              </div>
+
+              {s?.type === "generic" && s.groups?.map((g, gi) => {
+                const key = `${s.id}-${gi}`;
+                const open = !!openMap[key];
+                const ns = `${s.id}-${g.id}`;
+                return (
+                  <Accordion key={key} title={g.title} open={open} onToggle={() => setOpenMap({ ...openMap, [key]: !open })}>
+                    <Checklist ns={ns} items={g.items} state={ticks} onToggle={(id) => setTicks((prev) => ({ ...prev, [id]: !prev[id] }))} />
+                  </Accordion>
+                );
+              })}
+
+              {s?.type === "kpi" && (
+                <div className="rounded-2xl border border-[#9EC9FF]/40 p-4 bg-white/70 backdrop-blur">
+                  <KpiBlock items={s.items} />
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </section>
+      </main>
+    </div>
+  );
+}
+
