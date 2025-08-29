@@ -94,7 +94,7 @@ function Field({ f, isFirst, value, onChange, firstFieldRef }) {
   return <input className={base} type={f.type} {...commonProps} />;
 }
 
-export default function OPSFormPreview() {
+export default function SOPWizard() {
   const [stepIndex, setStepIndex] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState(() => {
